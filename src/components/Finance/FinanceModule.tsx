@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { DollarSign, TrendingUp } from 'lucide-react';
-import { db } from '../../utils/database';
+// ...existing code...
 import I18nManager from '../../utils/i18n';
 import StatsCard from '../Dashboard/StatsCard';
 import type { Payment, Teacher, Expense } from '../../types';
+import { db } from '../../utils/database';
 import {
   calculateTotalRevenue,
   calculateSalaryExpenses,
@@ -33,12 +34,12 @@ const FinanceModule: React.FC = () => {
 
   const loadFinanceData = async () => {
     try {
+      await db.init();
       const [paymentsData, teachersData, expensesData] = await Promise.all([
         db.getAll('payments'),
         db.getAll('teachers'),
         db.getAll('expenses')
       ]);
-
       setPayments(paymentsData);
       setTeachers(teachersData);
       setExpenses(expensesData);

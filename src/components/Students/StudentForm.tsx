@@ -24,6 +24,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ student, onSubmit, onCancel }
   const [subjects, setSubjects] = useState<StudentSubject[]>(student?.subjects || []);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const isRTL = I18nManager.isRTL();
 
   const availableSubjects = [
@@ -52,7 +53,11 @@ const StudentForm: React.FC<StudentFormProps> = ({ student, onSubmit, onCancel }
     setSubjects(subjects.filter((_, i) => i !== index));
   };
 
-  const updateSubject = (index: number, field: keyof StudentSubject, value: any) => {
+  const updateSubject = (
+    index: number,
+    field: keyof StudentSubject,
+    value: string | string[]
+  ) => {
     const updatedSubjects = [...subjects];
     updatedSubjects[index] = { ...updatedSubjects[index], [field]: value };
     setSubjects(updatedSubjects);
@@ -90,9 +95,8 @@ const StudentForm: React.FC<StudentFormProps> = ({ student, onSubmit, onCancel }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    setSaveError(null);
     if (!validate()) return;
-
     setLoading(true);
     try {
       const studentData: Student = {
@@ -108,15 +112,14 @@ const StudentForm: React.FC<StudentFormProps> = ({ student, onSubmit, onCancel }
         phoneNumber: formData.phoneNumber.trim(),
         subjects: subjects.filter(s => s.subjectName && s.teacherIds.length > 0),
       };
-
       if (student) {
         await db.update('students', studentData);
       } else {
         await db.add('students', studentData);
       }
-
       onSubmit();
     } catch (error) {
+      setSaveError('حدث خطأ أثناء حفظ البيانات. يرجى المحاولة لاحقًا.');
       console.error('Error saving student:', error);
     } finally {
       setLoading(false);
@@ -125,7 +128,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ student, onSubmit, onCancel }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-md flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-900">
@@ -139,8 +142,9 @@ const StudentForm: React.FC<StudentFormProps> = ({ student, onSubmit, onCancel }
           </button>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        {/* Scrollable Form */}
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-4">
+          {/* ...جميع حقول النموذج كما هي... */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               {I18nManager.t('fullName')}
@@ -155,7 +159,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ student, onSubmit, onCancel }
             />
             {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>}
           </div>
-
+          {/* ...باقي الحقول كما هي... */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               {I18nManager.t('class')}
@@ -170,7 +174,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ student, onSubmit, onCancel }
             />
             {errors.class && <p className="text-red-500 text-xs mt-1">{errors.class}</p>}
           </div>
-
+          {/* ...باقي الحقول كما هي... */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               {I18nManager.t('paymentType')}
@@ -184,7 +188,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ student, onSubmit, onCancel }
               <option value="daily">{I18nManager.t('daily')}</option>
             </select>
           </div>
-
+          {/* ...باقي الحقول كما هي... */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               {I18nManager.t('paymentStatus')}
@@ -198,7 +202,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ student, onSubmit, onCancel }
               <option value="unpaid">{I18nManager.t('unpaid')}</option>
             </select>
           </div>
-
+          {/* ...باقي الحقول كما هي... */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               {I18nManager.t('amountPaid')} ({I18nManager.t('currency')})
@@ -214,7 +218,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ student, onSubmit, onCancel }
             />
             {errors.amountPaid && <p className="text-red-500 text-xs mt-1">{errors.amountPaid}</p>}
           </div>
-
+          {/* ...باقي الحقول كما هي... */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Phone Number
@@ -226,8 +230,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ student, onSubmit, onCancel }
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
             />
           </div>
-
-          {/* Academic Details Section */}
+          {/* ...باقي الحقول كما هي... */}
           <div className="border-t pt-4">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium text-gray-900">Academic Details</h3>
@@ -295,9 +298,12 @@ const StudentForm: React.FC<StudentFormProps> = ({ student, onSubmit, onCancel }
               </div>
             ))}
           </div>
-
-          {/* Actions */}
-          <div className={`flex space-x-3 pt-4 ${isRTL ? 'flex-row-reverse space-x-reverse' : ''}`}>
+          {saveError && (
+  <div className="text-red-600 text-sm mb-2 text-center font-bold">{saveError}</div>
+)}
+          {/* أزرار الحفظ والإلغاء داخل النموذج */}
+          <div className={`flex space-x-3 pt-6 border-t border-gray-200 ${isRTL ? 'flex-row-reverse space-x-reverse' : ''}`}
+            style={{ position: 'sticky', bottom: 0, background: 'white', zIndex: 10 }}>
             <button
               type="submit"
               disabled={loading}

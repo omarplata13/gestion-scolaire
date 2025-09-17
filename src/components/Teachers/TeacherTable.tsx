@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Edit, Trash2, Plus, Search, CheckCircle } from 'lucide-react';
-import { db } from '../../utils/database';
+// ...existing code...
 import { AuthManager } from '../../utils/auth';
+import { db } from '../../utils/database';
 import I18nManager from '../../utils/i18n';
 import type { Teacher, Student, Expense } from '../../types';
 import { generateId } from '../../utils/calculations';
 import TeacherForm from './TeacherForm';
+// Add this import for db
+// If your db utility is named differently or located elsewhere, update the path accordingly.
+// Example: import db from '../../db'; or import db from '../../utils/database';
 
 const TeacherTable: React.FC = () => {
   const [teachers, setTeachers] = useState<Teacher[]>([]);
@@ -37,6 +41,7 @@ const TeacherTable: React.FC = () => {
 
   const loadData = async () => {
     try {
+      await db.init();
       const [teachersData, studentsData] = await Promise.all([
         db.getAll('teachers'),
         db.getAll('students')

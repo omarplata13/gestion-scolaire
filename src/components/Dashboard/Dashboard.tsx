@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Users, GraduationCap, AlertTriangle, TrendingUp } from 'lucide-react';
-import { db } from '../../utils/database';
+// ...existing code...
 import I18nManager from '../../utils/i18n';
 import StatsCard from './StatsCard';
 import PaymentChart from './PaymentChart';
 import type { Student, Teacher, Payment, Expense } from '../../types';
+import { db } from '../../utils/database';
 import {
   calculateTotalRevenue,
   calculateSalaryExpenses,
@@ -37,13 +38,13 @@ const Dashboard: React.FC = () => {
 
   const loadDashboardData = async () => {
     try {
+      await db.init();
       const [studentsData, teachersData, paymentsData, expensesData] = await Promise.all([
         db.getAll('students'),
         db.getAll('teachers'),
         db.getAll('payments'),
         db.getAll('expenses')
       ]);
-
       setStudents(studentsData);
       setTeachers(teachersData);
       setPayments(paymentsData);

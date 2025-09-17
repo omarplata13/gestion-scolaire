@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Users, GraduationCap } from 'lucide-react';
-import { db } from '../../utils/database';
 import { AuthManager } from '../../utils/auth';
 import I18nManager from '../../utils/i18n';
 import type { Student, Teacher, AttendanceRecord } from '../../types';
 import { generateId } from '../../utils/calculations';
+import { db } from '../../utils/database';
+
+// تعريف window.electronAPI موجود في vite-env.d.ts ولا داعي لتعريفه هنا
 
 const AttendanceModule: React.FC = () => {
   const [students, setStudents] = useState<Student[]>([]);
@@ -15,7 +17,6 @@ const AttendanceModule: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   const canWrite = AuthManager.canWrite();
-  const isRTL = I18nManager.isRTL();
 
   useEffect(() => {
     loadData();
@@ -23,12 +24,12 @@ const AttendanceModule: React.FC = () => {
 
   const loadData = async () => {
     try {
+      await db.init();
       const [studentsData, teachersData, attendanceData] = await Promise.all([
         db.getAll('students'),
         db.getAll('teachers'),
         db.getAll('attendance')
       ]);
-
       setStudents(studentsData);
       setTeachers(teachersData);
       setAttendance(attendanceData);

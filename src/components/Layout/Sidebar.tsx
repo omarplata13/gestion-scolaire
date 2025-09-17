@@ -28,6 +28,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
     { path: '/teachers', icon: GraduationCap, label: I18nManager.t('teachers') },
     { path: '/finance', icon: DollarSign, label: I18nManager.t('finance') },
     { path: '/attendance', icon: Calendar, label: I18nManager.t('attendance') },
+    { path: '/emploi', icon: Calendar, label: 'Emploi du temps' },
     { path: '/expenses', icon: Receipt, label: I18nManager.t('expenses') },
     { path: '/reports', icon: FileText, label: I18nManager.t('reports') },
   ];

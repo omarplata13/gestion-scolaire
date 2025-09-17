@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Edit, Trash2, Plus, Search } from 'lucide-react';
-import { db } from '../../utils/database';
 import { AuthManager } from '../../utils/auth';
 import I18nManager from '../../utils/i18n';
 import type { Expense } from '../../types';
+import { db } from '../../utils/database';
 import ExpenseForm from './ExpenseForm';
 
 const ExpenseTable: React.FC = () => {
@@ -17,26 +17,7 @@ const ExpenseTable: React.FC = () => {
   const canWrite = AuthManager.canWrite();
   const isRTL = I18nManager.isRTL();
 
-  useEffect(() => {
-    loadExpenses();
-  }, []);
-
-  useEffect(() => {
-    filterExpenses();
-  }, [expenses, searchTerm]);
-
-  const loadExpenses = async () => {
-    try {
-      const data = await db.getAll('expenses');
-      setExpenses(data);
-      setLoading(false);
-    } catch (error) {
-      console.error('Error loading expenses:', error);
-      setLoading(false);
-    }
-  };
-
-  const filterExpenses = () => {
+  const filterExpenses = React.useCallback(() => {
     if (!searchTerm) {
       setFilteredExpenses(expenses);
       return;
@@ -47,6 +28,28 @@ const ExpenseTable: React.FC = () => {
       (expense.notes && expense.notes.toLowerCase().includes(searchTerm.toLowerCase()))
     );
     setFilteredExpenses(filtered);
+  }, [expenses, searchTerm]);
+
+  useEffect(() => {
+    loadExpenses();
+  }, []);
+
+  // Removed duplicate filterExpenses declaration
+
+  useEffect(() => {
+    filterExpenses();
+  }, [filterExpenses]);
+
+  const loadExpenses = async () => {
+    try {
+      await db.init();
+      const data = await db.getAll('expenses');
+      setExpenses(data);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error loading expenses:', error);
+      setLoading(false);
+    }
   };
 
   const handleAddExpense = () => {

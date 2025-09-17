@@ -99,7 +99,7 @@ const TeacherForm: React.FC<TeacherFormProps> = ({ teacher, onSubmit, onCancel }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-md flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-900">
@@ -113,8 +113,9 @@ const TeacherForm: React.FC<TeacherFormProps> = ({ teacher, onSubmit, onCancel }
           </button>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        {/* Scrollable Form */}
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-4">
+          {/* ...جميع حقول النموذج كما هي... */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               {I18nManager.t('fullName')}
@@ -129,7 +130,7 @@ const TeacherForm: React.FC<TeacherFormProps> = ({ teacher, onSubmit, onCancel }
             />
             {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>}
           </div>
-
+          {/* ...باقي الحقول كما هي... */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               {I18nManager.t('subject')}
@@ -144,7 +145,7 @@ const TeacherForm: React.FC<TeacherFormProps> = ({ teacher, onSubmit, onCancel }
             />
             {errors.subject && <p className="text-red-500 text-xs mt-1">{errors.subject}</p>}
           </div>
-
+          {/* ...باقي الحقول كما هي... */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               {I18nManager.t('phoneNumber')}
@@ -156,7 +157,7 @@ const TeacherForm: React.FC<TeacherFormProps> = ({ teacher, onSubmit, onCancel }
               className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 border-gray-300"
             />
           </div>
-
+          {/* ...باقي الحقول كما هي... */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               {I18nManager.t('languages')}
@@ -176,7 +177,7 @@ const TeacherForm: React.FC<TeacherFormProps> = ({ teacher, onSubmit, onCancel }
               <option value="Spanish">Spanish</option>
             </select>
           </div>
-
+          {/* ...باقي الحقول كما هي... */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               {I18nManager.t('email')} ({I18nManager.t('optional')})
@@ -191,7 +192,7 @@ const TeacherForm: React.FC<TeacherFormProps> = ({ teacher, onSubmit, onCancel }
             />
             {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
           </div>
-
+          {/* ...باقي الحقول كما هي... */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               {I18nManager.t('salaryType')}
@@ -205,7 +206,7 @@ const TeacherForm: React.FC<TeacherFormProps> = ({ teacher, onSubmit, onCancel }
               <option value="per_student">{I18nManager.t('perStudent')}</option>
             </select>
           </div>
-
+          {/* ...باقي الحقول كما هي... */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               {I18nManager.t('salaryAmount')}
@@ -218,7 +219,7 @@ const TeacherForm: React.FC<TeacherFormProps> = ({ teacher, onSubmit, onCancel }
             />
             {errors.salaryAmount && <p className="text-red-500 text-xs mt-1">{errors.salaryAmount}</p>}
           </div>
-
+          {/* ...باقي الحقول كما هي... */}
           {formData.salaryType === 'per_student' && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -233,7 +234,7 @@ const TeacherForm: React.FC<TeacherFormProps> = ({ teacher, onSubmit, onCancel }
               {errors.assignedStudents && <p className="text-red-500 text-xs mt-1">{errors.assignedStudents}</p>}
             </div>
           )}
-
+          {/* ...باقي الحقول كما هي... */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Assigned Class
@@ -249,9 +250,9 @@ const TeacherForm: React.FC<TeacherFormProps> = ({ teacher, onSubmit, onCancel }
               ))}
             </select>
           </div>
-
-          {/* Actions */}
-          <div className={`flex space-x-3 pt-4 ${isRTL ? 'flex-row-reverse space-x-reverse' : ''}`}>
+          {/* أزرار الحفظ والإلغاء داخل النموذج */}
+          <div className={`flex space-x-3 pt-6 border-t border-gray-200 ${isRTL ? 'flex-row-reverse space-x-reverse' : ''}`}
+            style={{ position: 'sticky', bottom: 0, background: 'white', zIndex: 10 }}>
             <button
               type="submit"
               disabled={loading}

@@ -1,3 +1,10 @@
+import type { User, Student, Teacher, Payment, Expense, AttendanceRecord } from '../types';
+
+// دالة لمسح قاعدة البيانات بالكامل
+// تم تعطيل دالة إعادة تهيئة قاعدة البيانات لحماية بيانات المستخدم
+export const resetDatabase = async (): Promise<void> => {
+  throw new Error('تم تعطيل دالة إعادة تهيئة قاعدة البيانات لحماية بياناتك.');
+};
 interface DBSchema {
   users: User[];
   students: Student[];
@@ -238,15 +245,19 @@ export const initSampleData = async (): Promise<void> => {
         amount: 5000,
         date: new Date('2024-12-01').toISOString(),
         paymentType: 'monthly' as const,
-        notes: 'December payment'
+        notes: 'December payment',
+        teacherShare: 0,
+        schoolShare: 0
       },
       {
         id: 'payment2',
-        studentId: 'student1',
-        amount: 5000,
+        studentId: 'student2',
+        amount: 4500,
         date: new Date('2024-11-01').toISOString(),
         paymentType: 'monthly' as const,
-        notes: 'November payment'
+        notes: 'November payment',
+        teacherShare: 0,
+        schoolShare: 0
       },
       {
         id: 'payment3',
@@ -254,7 +265,9 @@ export const initSampleData = async (): Promise<void> => {
         amount: 6000,
         date: new Date('2024-12-01').toISOString(),
         paymentType: 'daily' as const,
-        notes: 'Daily payments for December'
+        notes: 'Daily payments for December',
+        teacherShare: 0,
+        schoolShare: 0
       },
       {
         id: 'payment4',
@@ -262,7 +275,9 @@ export const initSampleData = async (): Promise<void> => {
         amount: 4500,
         date: new Date('2024-11-01').toISOString(),
         paymentType: 'monthly' as const,
-        notes: 'November payment'
+        notes: 'November payment',
+        teacherShare: 0,
+        schoolShare: 0
       }
     ];
 
