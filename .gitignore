@@ -23,3 +23,11 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+# Build and release artifacts
+release/
+build/
+*.exe
+*.AppImage
+*.msi
+*.blockmap
