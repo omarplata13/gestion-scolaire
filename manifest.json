@@ -1,0 +1,23 @@
+{
+  "name": "gestion scolaire",
+  "short_name": "gestion scolaire",
+  "description": "gestion scolaire Management System",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#DC2626",
+  "icons": [
+    {
+      "src": "/build/icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/build/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
