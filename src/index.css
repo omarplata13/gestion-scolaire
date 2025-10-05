@@ -4,3 +4,9 @@
 html {
 	zoom: 1;
 }
+
+body {
+	transform: scale(0.90);
+	transform-origin: top left;
+	width: 100.3%;
+}
