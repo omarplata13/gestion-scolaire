@@ -30,16 +30,16 @@ const StudentForm: React.FC<StudentFormProps> = ({ student, onSubmit, onCancel }
   const isRTL = I18nManager.isRTL();
 
   const availableSubjects = [
-    'Éducation islamique (التربية الإسلامية)',
-    'Éducation civique (التربية المدنية)',
-    'Sciences naturelles (العلوم الطبيعية)',
-    'Mathématiques (الرياضيات)',
-    'Physique (الفيزياء)',
-    'Français (الفرنسية)',
-    'Anglais (الإنجليزية)',
-    'Arabe (العربية)',
-    'Histoire & Géographie (التاريخ والجغرافيا)',
-    'Philosophie (الفلسفة)'
+    'Islamic Education (ØªØ±Ø¨ÙŠØ© Ø¥Ø³Ù„Ø§Ù…ÙŠØ©)',
+    'Civic Education (ØªØ±Ø¨ÙŠØ© Ù…Ø¯Ù†ÙŠØ©)',
+    'Natural Sciences (Ø¹Ù„ÙˆÙ… Ø§Ù„Ø·Ø¨ÙŠØ¹Ø© ÙˆØ§Ù„Ø­ÙŠØ§Ø©)',
+    'Mathematics (Ø±ÙŠØ§Ø¶ÙŠØ§Øª)',
+    'Physics (ÙÙŠØ²ÙŠØ§Ø¡)',
+    'French (ÙØ±Ù†Ø³ÙŠØ©)',
+    'English (Ø§Ù†Ø¬Ù„ÙŠØ²ÙŠØ©)',
+    'Arabic (Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©)',
+    'History & Geography (ØªØ§Ø±ÙŠØ® Ùˆ Ø§Ù„Ø¬ØºØ±Ø§ÙÙŠØ§)',
+    'Philosophy (ÙÙ„Ø³ÙØ©)'
   ];
 
   React.useEffect(() => {
@@ -48,7 +48,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ student, onSubmit, onCancel }
 
   const loadTeachers = async () => {
     try {
-      const teachersData = await db.getAllTeachers();
+  const teachersData = await db.getAllTeachers();
       setTeachers(teachersData);
     } catch (error) {
       console.error('Error loading teachers:', error);
@@ -92,7 +92,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ student, onSubmit, onCancel }
     if (!formData.fullName.trim()) {
       newErrors.fullName = I18nManager.t('required');
     }
-  // Load teachers effect
+    // ÇáÞÓã ÇÎÊíÇÑí¡ áÇ ÊÍÞÞ ãäå
     if (formData.amountPaid === '' || Number(formData.amountPaid) <= 0) {
       newErrors.amountPaid = I18nManager.t('invalidAmount');
     }
@@ -128,7 +128,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ student, onSubmit, onCancel }
       }
       onSubmit();
     } catch (error) {
-      setSaveError("Une erreur s'est produite lors de l'enregistrement. Veuillez réessayer plus tard.");
+      setSaveError('Ø­Ø¯Ø« Ø®Ø·Ø£ Ø£Ø«Ù†Ø§Ø¡ Ø­ÙØ¸ Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª. ÙŠØ±Ø¬Ù‰ Ø§Ù„Ù…Ø­Ø§ÙˆÙ„Ø© Ù„Ø§Ø­Ù‚Ù‹Ø§.');
       console.error('Error saving student:', error);
     } finally {
       setLoading(false);
@@ -153,7 +153,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ student, onSubmit, onCancel }
 
         {/* Scrollable Form */}
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-4">
-          {/* Form fields */}
+          {/* ...Ø¬Ù…ÙŠØ¹ Ø­Ù‚ÙˆÙ„ Ø§Ù„Ù†ÙˆØ°Ø¬ ÙƒÙ…Ø§ Ù‡ÙŠ... */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               {I18nManager.t('fullName')}
@@ -168,7 +168,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ student, onSubmit, onCancel }
             />
             {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>}
           </div>
-          {/* Date of birth field */}
+          {/* ÎÇäÉ ÊÇÑíÎ ÇáãíáÇÏ */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Date de naissance
@@ -180,7 +180,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ student, onSubmit, onCancel }
               className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 border-gray-300"
             />
           </div>
-          {/* Other fields */}
+          {/* ...Ø¨Ø§Ù‚ÙŠ Ø§Ù„Ø­Ù‚ÙˆÙ„ ÙƒÙ…Ø§ Ù‡ÙŠ... */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Classe
@@ -192,7 +192,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ student, onSubmit, onCancel }
               className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 border-gray-300"
             />
           </div>
-          {/* Autres champs du formulaire */}
+          {/* ...Ø¨Ø§Ù‚ÙŠ Ø§Ù„Ø­Ù‚ÙˆÙ„ ÙƒÙ…Ø§ Ù‡ÙŠ... */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               {I18nManager.t('paymentType')}
@@ -206,7 +206,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ student, onSubmit, onCancel }
               <option value="daily">{I18nManager.t('daily')}</option>
             </select>
           </div>
-          {/* Autres champs du formulaire */}
+          {/* ...Ø¨Ø§Ù‚ÙŠ Ø§Ù„Ø­Ù‚ÙˆÙ„ ÙƒÙ…Ø§ Ù‡ÙŠ... */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               {I18nManager.t('paymentStatus')}
@@ -220,7 +220,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ student, onSubmit, onCancel }
               <option value="unpaid">{I18nManager.t('unpaid')}</option>
             </select>
           </div>
-          {/* Autres champs du formulaire */}
+          {/* ...Ø¨Ø§Ù‚ÙŠ Ø§Ù„Ø­Ù‚ÙˆÙ„ ÙƒÙ…Ø§ Ù‡ÙŠ... */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Montant payé (DA)
@@ -236,7 +236,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ student, onSubmit, onCancel }
             />
             {errors.amountPaid && <p className="text-red-500 text-xs mt-1">{errors.amountPaid}</p>}
           </div>
-          {/* Autres champs du formulaire */}
+          {/* ...Ø¨Ø§Ù‚ÙŠ Ø§Ù„Ø­Ù‚ÙˆÙ„ ÙƒÙ…Ø§ Ù‡ÙŠ... */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               {'Numéro de téléphone'}
@@ -259,7 +259,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ student, onSubmit, onCancel }
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
             />
           </div>
-          {/* Autres champs du formulaire */}
+          {/* ...Ø¨Ø§Ù‚ÙŠ Ø§Ù„Ø­Ù‚ÙˆÙ„ ÙƒÙ…Ø§ Ù‡ÙŠ... */}
           <div className="border-t pt-4">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium text-gray-900">Section étudiante</h3>
@@ -289,14 +289,14 @@ const StudentForm: React.FC<StudentFormProps> = ({ student, onSubmit, onCancel }
                 <div className="space-y-3">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Nom de la matière
+                      Ø§Ø³Ù… Ø§Ù„Ù…Ø§Ø¯Ø©
                     </label>
                     <select
                       value={subject.subjectName}
                       onChange={(e) => updateSubject(index, 'subjectName', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
                     >
-                      <option value="">Sélectionner la matière</option>
+                      <option value="">Ø§Ø®ØªØ± Ø§Ù„Ù…Ø§Ø¯Ø©</option>
                       {availableSubjects.map(subjectName => (
                         <option key={subjectName} value={subjectName}>{subjectName}</option>
                       ))}
@@ -330,7 +330,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ student, onSubmit, onCancel }
           {saveError && (
   <div className="text-red-600 text-sm mb-2 text-center font-bold">{saveError}</div>
 )}
-          {/* Notifications de sauvegarde et messages d'erreur */}
+          {/* Ø£Ø²Ø±Ø§Ø± Ø§Ù„Ø­ÙØ¸ ÙˆØ§Ù„Ø¥Ù„ØºØ§Ø¡ Ø¯Ø§Ø®Ù„ Ø§Ù„Ù†Ù…ÙˆØ°Ø¬ */}
           <div className={`flex space-x-3 pt-6 border-t border-gray-200 ${isRTL ? 'flex-row-reverse space-x-reverse' : ''}`}
             style={{ position: 'sticky', bottom: 0, background: 'white', zIndex: 10 }}>
             <button
@@ -355,3 +355,4 @@ const StudentForm: React.FC<StudentFormProps> = ({ student, onSubmit, onCancel }
 };
 
 export default StudentForm;
+

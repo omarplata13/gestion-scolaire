@@ -1,11 +1,11 @@
   // Backup/export all data as JSON
   const handleBackupData = async () => {
-    await db.init();
+  // await db.init();
     const [studentsData, teachersData, paymentsData, expensesData] = await Promise.all([
-      db.getAll('students'),
-      db.getAll('teachers'),
-      db.getAll('payments'),
-      db.getAll('expenses')
+  db.getAllStudents(),
+  db.getAllTeachers(),
+  db.getAllPayments(),
+  db.getAllExpenses()
     ]);
     const backup = {
       students: studentsData,
@@ -35,6 +35,59 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 const ReportsModule: React.FC = () => {
+  // Restore backup data from uploaded file
+  const handleRestoreData = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const backup = JSON.parse(text);
+      // Restore students
+      if (Array.isArray(backup.students)) {
+        const oldStudents = await db.getAllStudents();
+        for (const s of oldStudents) {
+          await db.deleteStudent(s.id);
+        }
+        for (const student of backup.students) {
+          await db.addStudent(student);
+        }
+      }
+      // Restore teachers
+      if (Array.isArray(backup.teachers)) {
+        const oldTeachers = await db.getAllTeachers();
+        for (const t of oldTeachers) {
+          await db.deleteTeacher(t.id);
+        }
+        for (const teacher of backup.teachers) {
+          await db.addTeacher(teacher);
+        }
+      }
+      // Restore payments
+      if (Array.isArray(backup.payments)) {
+        const oldPayments = await db.getAllPayments();
+        for (const p of oldPayments) {
+          await db.deletePayment(p.id);
+        }
+        for (const payment of backup.payments) {
+          await db.addPayment(payment);
+        }
+      }
+      // Restore expenses
+      if (Array.isArray(backup.expenses)) {
+        const oldExpenses = await db.getAllExpenses();
+        for (const e of oldExpenses) {
+          await db.deleteExpense(e.id);
+        }
+        for (const expense of backup.expenses) {
+          await db.addExpense(expense);
+        }
+      }
+      alert('تم استرجاع البيانات بنجاح!');
+      loadData();
+    } catch (error) {
+      alert('فشل استرجاع البيانات: ' + (error instanceof Error ? error.message : String(error)));
+    }
+  };
   const [students, setStudents] = useState<Student[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -44,6 +97,40 @@ const ReportsModule: React.FC = () => {
   const [note, setNote] = useState('');
   const [showNoteInput, setShowNoteInput] = useState(false);
   const [noteSaved, setNoteSaved] = useState(false);
+  // Presence PDF state
+  const [selectedPresenceTeacherId, setSelectedPresenceTeacherId] = useState<string>('');
+  // Presence PDF generator
+  const downloadPresencePDF = () => {
+    if (!selectedPresenceTeacherId) return;
+    const teacher = teachers.find(t => t.id === selectedPresenceTeacherId);
+    if (!teacher) return;
+    const assignedStudents = students.filter(student =>
+      (student.subjects || []).some(sub => sub.teacherIds.includes(teacher.id))
+    );
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.width;
+    doc.setFontSize(18);
+    doc.text(`Liste Présence`, pageWidth / 2, 20, { align: 'center' });
+    doc.setFontSize(12);
+    doc.text(`Teacher: ${teacher.fullName} (${teacher.subject})`, 20, 30);
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, 40);
+    autoTable(doc, {
+      startY: 50,
+      head: [['Student Name', 'Present', 'Absent', 'P']],
+      body: assignedStudents.map(student => [
+        student.fullName,
+        '', // Present box (empty)
+        '', // Absent box (empty)
+        ''  // P box (empty)
+      ]),
+      styles: { fillColor: [230, 240, 255], textColor: 20 },
+      headStyles: { fillColor: [76, 81, 191], textColor: 255, fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [255, 255, 255] },
+      margin: { left: 20, right: 20 },
+      theme: 'grid',
+    });
+    doc.save('liste Présence.pdf');
+  };
 
   useEffect(() => {
     loadData();
@@ -51,12 +138,12 @@ const ReportsModule: React.FC = () => {
 
   const loadData = async () => {
     try {
-      await db.init();
+  // await db.init();
       const [studentsData, teachersData, paymentsData, expensesData] = await Promise.all([
-        db.getAll('students'),
-        db.getAll('teachers'),
-        db.getAll('payments'),
-        db.getAll('expenses')
+  db.getAllStudents(),
+  db.getAllTeachers(),
+  db.getAllPayments(),
+  db.getAllExpenses()
       ]);
       setStudents(studentsData);
       setTeachers(teachersData);
@@ -73,7 +160,7 @@ const ReportsModule: React.FC = () => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.width;
     doc.setFontSize(20);
-    doc.text('TCC - Student Report', pageWidth / 2, 20, { align: 'center' });
+  doc.text('TCC - Student Report', pageWidth / 2, 20, { align: 'center' });
     doc.setFontSize(12);
     doc.text(`Generated on: ${new Date().toLocaleDateString()}`, pageWidth / 2, 30, { align: 'center' });
     doc.text(`Total Students: ${students.length}`, pageWidth / 2, 40, { align: 'center' });
@@ -100,7 +187,7 @@ const ReportsModule: React.FC = () => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.width;
     doc.setFontSize(20);
-    doc.text('TCC - Teacher Report', pageWidth / 2, 20, { align: 'center' });
+  doc.text('TCC - Teacher Report', pageWidth / 2, 20, { align: 'center' });
     doc.setFontSize(12);
     doc.text(`Generated on: ${new Date().toLocaleDateString()}`, pageWidth / 2, 30, { align: 'center' });
     doc.text(`Total Teachers: ${teachers.length}`, pageWidth / 2, 40, { align: 'center' });
@@ -130,7 +217,7 @@ const ReportsModule: React.FC = () => {
     const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
     const profit = totalRevenue - totalExpenses;
     doc.setFontSize(20);
-    doc.text('TCC - Financial Report', pageWidth / 2, 20, { align: 'center' });
+  doc.text('TCC - Financial Report', pageWidth / 2, 20, { align: 'center' });
     doc.setFontSize(12);
     doc.text(`Generated on: ${new Date().toLocaleDateString()}`, pageWidth / 2, 30, { align: 'center' });
 
@@ -281,17 +368,58 @@ const ReportsModule: React.FC = () => {
   <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900">{I18nManager.t('reports')}</h1>
-        <button
-          onClick={handleBackupData}
-          className="bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-900 transition-colors ml-4"
-        >
-          Backup Data
-        </button>
+        <div className="flex space-x-2">
+          <button
+            onClick={handleBackupData}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-800 transition-colors"
+          >
+            تحميل نسخة احتياطية
+          </button>
+          <label className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors cursor-pointer">
+            رفع نسخة احتياطية
+            <input
+              type="file"
+              accept="application/json"
+              style={{ display: 'none' }}
+              onChange={handleRestoreData}
+            />
+          </label>
+        </div>
       </div>
 
   {/* Report Cards */}
   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* جميع البطاقات السابقة */}
+        {/* بطاقة حضور الطلاب حسب الأستاذ */}
+        <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 hover:shadow-lg transition-shadow">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">Presence List per Teacher</h3>
+              <p className="text-sm text-gray-600">Select a teacher and download a PDF of assigned students with attendance boxes</p>
+            </div>
+            <FileText size={24} className="text-indigo-500" />
+          </div>
+          <div className="space-y-3">
+            <select
+              className="w-full border rounded-lg px-3 py-2"
+              value={selectedPresenceTeacherId}
+              onChange={e => setSelectedPresenceTeacherId(e.target.value)}
+            >
+              <option value="">Select Teacher</option>
+              {teachers.map(teacher => (
+                <option key={teacher.id} value={teacher.id}>{teacher.fullName} ({teacher.subject})</option>
+              ))}
+            </select>
+            <button
+              disabled={!selectedPresenceTeacherId}
+              onClick={downloadPresencePDF}
+              className={`w-full bg-indigo-500 text-white py-2 px-4 rounded-lg hover:bg-indigo-600 transition-colors flex items-center justify-center space-x-2 ${!selectedPresenceTeacherId ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <Download size={16} />
+              <span>Download PDF</span>
+            </button>
+          </div>
+        </div>
         <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 hover:shadow-lg transition-shadow">
           <div className="flex items-center justify-between mb-4">
             <div>

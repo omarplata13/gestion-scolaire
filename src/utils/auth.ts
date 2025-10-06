@@ -6,7 +6,7 @@ export class AuthManager {
 
   static async login(username: string, password: string): Promise<User | null> {
     try {
-      const users = await db.getAll('users');
+      const users = await db.getAllUsers();
       
       // Simple password validation (in production, use proper hashing)
       const validCredentials = [

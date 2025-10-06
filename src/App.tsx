@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { db, initSampleData } from './utils/database';
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { initSampleData } from './utils/database';
+import { updateStudentPaymentStatus } from './utils/database';
 import { AuthManager } from './utils/auth';
 import I18nManager from './utils/i18n';
 import LoginForm from './components/Login/LoginForm';
@@ -21,17 +22,17 @@ function App() {
   const [, setCurrentLanguage] = useState<'ar' | 'fr'>('fr');
 
   useEffect(() => {
-    initializeApp();
+  initializeApp();
+  // تم تعطيل window.electronAPI بعد التحويل إلى IndexedDB
   }, []);
 
   const initializeApp = async () => {
     let errorMsg = '';
     try {
-      console.log('[DEBUG] Initializing database...');
-      await db.init();
-      console.log('[DEBUG] Database initialized. Adding sample data if needed...');
+      // لا يوجد db.init في النسخة الجديدة
       await initSampleData();
-      console.log('[DEBUG] Sample data initialization complete.');
+  // تحديث حالة دفع الطلاب تلقائياً عند بداية اليوم
+  await updateStudentPaymentStatus();
       // Set language
       const savedLang = I18nManager.getCurrentLanguage();
       setCurrentLanguage(savedLang);
@@ -86,7 +87,7 @@ function App() {
         <Sidebar onLogout={handleLogout} />
         <Header onLanguageChange={handleLanguageChange} />
         <main className={`${isRTL ? 'pr-64' : 'pl-64'} transition-all duration-300`}>
-          <div className="pt-16 p-6">
+          <div className="pt-16 p-6" id="main-content">
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/students" element={<StudentTable />} />
@@ -98,6 +99,10 @@ function App() {
               <Route path="/emploi" element={<EmploiDuTemps />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
+            {/* رسالة افتراضية تظهر إذا لم يتم عرض أي شيء */}
+            <div id="fallback-message" style={{display: 'none', textAlign: 'center', color: '#DC2626', fontWeight: 'bold', marginTop: '40px'}}>
+              لا يوجد محتوى للعرض حالياً
+            </div>
           </div>
         </main>
       </div>

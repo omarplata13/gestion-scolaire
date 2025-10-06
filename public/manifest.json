@@ -1,7 +1,7 @@
 {
-  "name": "TCC - Training Coaching Center",
+  "name": "TCC",
   "short_name": "TCC",
-  "description": "Professional school management system",
+  "description": "Training Coaching Center Management System",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -19,9 +19,5 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ],
-  "scripts": {
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
-  }
+  ]
 }

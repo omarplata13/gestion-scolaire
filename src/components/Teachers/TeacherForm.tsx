@@ -84,9 +84,9 @@ const TeacherForm: React.FC<TeacherFormProps> = ({ teacher, onSubmit, onCancel }
       };
 
       if (teacher) {
-        await db.update('teachers', teacherData);
+  await db.updateTeacher(teacherData);
       } else {
-        await db.add('teachers', teacherData);
+  await db.addTeacher(teacherData);
       }
 
       onSubmit();

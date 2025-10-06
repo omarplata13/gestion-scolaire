@@ -34,11 +34,10 @@ const FinanceModule: React.FC = () => {
 
   const loadFinanceData = async () => {
     try {
-      await db.init();
       const [paymentsData, teachersData, expensesData] = await Promise.all([
-        db.getAll('payments'),
-        db.getAll('teachers'),
-        db.getAll('expenses')
+        db.getAllPayments(),
+        db.getAllTeachers(),
+        db.getAllExpenses()
       ]);
       setPayments(paymentsData);
       setTeachers(teachersData);

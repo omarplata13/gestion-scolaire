@@ -33,18 +33,17 @@ const TeacherTable: React.FC = () => {
       return;
     }
     const filtered = teachers.filter(teacher =>
-      teacher.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      teacher.subject.toLowerCase().includes(searchTerm.toLowerCase())
+      (teacher.fullName && teacher.fullName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (teacher.subject && teacher.subject.toLowerCase().includes(searchTerm.toLowerCase()))
     );
     setFilteredTeachers(filtered);
   }, [teachers, searchTerm]);
 
   const loadData = async () => {
     try {
-      await db.init();
       const [teachersData, studentsData] = await Promise.all([
-        db.getAll('teachers'),
-        db.getAll('students')
+        db.getAllTeachers(),
+        db.getAllStudents()
       ]);
       setTeachers(teachersData);
       setStudents(studentsData);
@@ -79,25 +78,30 @@ const TeacherTable: React.FC = () => {
   const handleDeleteTeacher = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this teacher?')) {
       try {
-        await db.delete('teachers', id);
-        await loadData();
+  await db.deleteTeacher(id);
+  await loadData();
       } catch (error) {
         console.error('Error deleting teacher:', error);
       }
     }
   };
 
-  const handleFormSubmit = async () => {
+  const handleFormSubmit = async (teacher?: Teacher) => {
     setShowForm(false);
     setEditingTeacher(null);
+    if (teacher) {
+      if (teacher.id) {
+        await db.updateTeacher(teacher);
+      } else {
+        await db.addTeacher(teacher);
+      }
+    }
     await loadData();
-    // Trigger dashboard update
     window.dispatchEvent(new CustomEvent('dataUpdated'));
   };
 
   const handleMarkSalaryAsPaid = async (teacher: Teacher) => {
     if (!canWrite) return;
-    
     try {
       // Update teacher salary status
       const updatedTeacher: Teacher = {
@@ -105,14 +109,11 @@ const TeacherTable: React.FC = () => {
         salaryStatus: 'paid',
         lastSalaryDate: new Date().toISOString()
       };
-      
-      await db.update('teachers', updatedTeacher);
-      
+      await db.updateTeacher(updatedTeacher);
       // Create an expense record for the salary payment
       const salaryAmount = teacher.salaryType === 'fixed' 
         ? teacher.salaryAmount 
         : teacher.salaryAmount * teacher.assignedStudents;
-        
       const expense: Expense = {
         id: generateId(),
         type: 'Salary',
@@ -120,11 +121,8 @@ const TeacherTable: React.FC = () => {
         amount: salaryAmount,
         notes: `Salary payment for ${teacher.fullName}`
       };
-      
-      await db.add('expenses', expense);
+      await db.addExpense(expense);
       await loadData();
-      
-      // Trigger dashboard update
       window.dispatchEvent(new CustomEvent('dataUpdated'));
     } catch (error) {
       console.error('Error marking teacher salary as paid:', error);

@@ -32,7 +32,7 @@
   },
   "build": {
     "appId": "com.tcc.school",
-  "productName": "gestion scolaire",
+  "productName": "TCC",
     "directories": {
       "buildResources": "assets",
       "output": "release"

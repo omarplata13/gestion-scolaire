@@ -27,6 +27,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
         setError('Invalid username or password');
       }
     } catch (err) {
+      console.error('Login error:', err);
       setError('Login failed. Please try again.');
     } finally {
       setLoading(false);
@@ -42,7 +43,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
             <GraduationCap size={32} className="text-white" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900">TCC</h1>
-          <p className="text-gray-600 mt-2">Training Coaching Center</p>
         </div>
 
         {/* Demo Credentials */}

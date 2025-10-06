@@ -8,6 +8,15 @@ interface Translations {
 }
 
 export const translations: Translations = {
+  emploiDuTemps: { ar: 'جدول الحصص', fr: 'Emploi du temps' },
+  centerName: { ar: 'مركز التدريب والتأهيل', fr: 'Centre de formation et de coaching' },
+  alerts: { ar: 'التنبيهات', fr: 'Alertes' },
+  unpaidStudentsAlert: { ar: 'طالب/طلاب غير مدفوعين', fr: 'élève(s) non payé(s)' },
+  unpaidStudentsDesc: { ar: 'هؤلاء الطلاب غير مدفوعين وقد يحتاجون للمتابعة', fr: 'Ces élèves sont marqués comme non payés et peuvent nécessiter un suivi' },
+  negativeProfit: { ar: 'خسارة مالية', fr: 'Profit négatif' },
+  negativeProfitDesc: { ar: 'المصروفات تتجاوز الإيرادات هذا الشهر', fr: 'Les dépenses dépassent les revenus ce mois-ci' },
+  allGood: { ar: 'كل شيء جيد!', fr: 'Tout est bon !' },
+  noCriticalIssues: { ar: 'لا توجد مشاكل حرجة حالياً', fr: 'Aucun problème critique pour le moment' },
   // Navigation
   dashboard: { ar: 'لوحة التحكم', fr: 'Tableau de bord' },
   students: { ar: 'الطلاب', fr: 'Étudiants' },
@@ -111,12 +120,14 @@ class I18nManager {
     return this.currentLang === 'ar';
   }
   
-  static formatCurrency(amount: number): string {
+  static formatCurrency(amount: number | undefined | null): string {
     const currency = this.t('currency');
+    let safeAmount = Number(amount);
+    if (!isFinite(safeAmount) || isNaN(safeAmount)) safeAmount = 0;
     if (this.isRTL()) {
-      return `${amount.toLocaleString('ar-DZ')} ${currency}`;
+      return `${safeAmount.toLocaleString('ar-DZ')} ${currency}`;
     }
-    return `${amount.toLocaleString('fr-FR')} ${currency}`;
+    return `${safeAmount.toLocaleString('fr-FR')} ${currency}`;
   }
 }
 

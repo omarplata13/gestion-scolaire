@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Users, GraduationCap, AlertTriangle, TrendingUp } from 'lucide-react';
-// ...existing code...
 import I18nManager from '../../utils/i18n';
 import StatsCard from './StatsCard';
 import PaymentChart from './PaymentChart';
@@ -38,12 +37,11 @@ const Dashboard: React.FC = () => {
 
   const loadDashboardData = async () => {
     try {
-      await db.init();
       const [studentsData, teachersData, paymentsData, expensesData] = await Promise.all([
-        db.getAll('students'),
-        db.getAll('teachers'),
-        db.getAll('payments'),
-        db.getAll('expenses')
+  db.getAllStudents(),
+  db.getAllTeachers(),
+  db.getAllPayments(),
+  db.getAllExpenses()
       ]);
       setStudents(studentsData);
       setTeachers(teachersData);
@@ -56,10 +54,26 @@ const Dashboard: React.FC = () => {
     }
   };
 
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
+      </div>
+    );
+  }
+
+  // رسالة إذا كانت البيانات فارغة
+  if (
+    students.length === 0 &&
+    teachers.length === 0 &&
+    payments.length === 0 &&
+    expenses.length === 0
+  ) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64">
+        <div className="text-xl font-bold text-red-600 mb-4">لا توجد بيانات للعرض حالياً</div>
+        <div className="text-gray-500">يرجى إضافة بيانات أو التأكد من قاعدة البيانات</div>
       </div>
     );
   }
@@ -74,8 +88,14 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">{I18nManager.t('dashboard')}</h1>
+      <div className="text-center mb-8">
+        <img
+          src="nano.png"
+          alt="Logo"
+          className="mx-auto mb-4 rounded-lg shadow-lg"
+          style={{ maxWidth: '120px', maxHeight: '120px', display: 'block' }}
+        />
+  <h1 className="three-d-title text-3xl font-bold text-gray-900">TCC</h1>
       </div>
 
       {/* Stats Cards */}
@@ -138,7 +158,7 @@ const Dashboard: React.FC = () => {
         
         {/* Alerts */}
         <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Alerts</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">{I18nManager.t('alerts')}</h3>
           <div className="space-y-3">
             {unpaidStudents.length > 0 && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -146,10 +166,10 @@ const Dashboard: React.FC = () => {
                   <AlertTriangle size={20} className="text-red-500 mr-3" />
                   <div>
                     <p className="text-sm font-medium text-red-800">
-                      {unpaidStudents.length} student(s) with unpaid status
+                      {unpaidStudents.length} {I18nManager.t('unpaidStudentsAlert')}
                     </p>
                     <p className="text-xs text-red-600">
-                      These students are marked as unpaid and may need follow-up
+                      {I18nManager.t('unpaidStudentsDesc')}
                     </p>
                   </div>
                 </div>
@@ -162,10 +182,10 @@ const Dashboard: React.FC = () => {
                   <AlertTriangle size={20} className="text-orange-500 mr-3" />
                   <div>
                     <p className="text-sm font-medium text-orange-800">
-                      Negative Profit
+                      {I18nManager.t('negativeProfit')}
                     </p>
                     <p className="text-xs text-orange-600">
-                      Expenses exceed revenue this month
+                      {I18nManager.t('negativeProfitDesc')}
                     </p>
                   </div>
                 </div>
@@ -178,10 +198,10 @@ const Dashboard: React.FC = () => {
                   <TrendingUp size={20} className="text-green-500 mr-3" />
                   <div>
                     <p className="text-sm font-medium text-green-800">
-                      All Good!
+                      {I18nManager.t('allGood')}
                     </p>
                     <p className="text-xs text-green-600">
-                      No critical issues at the moment
+                      {I18nManager.t('noCriticalIssues')}
                     </p>
                   </div>
                 </div>

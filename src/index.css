@@ -1,9 +1,10 @@
 /* 3D effect for dashboard title */
 .three-d-title {
-	text-shadow:
-		2px 2px 0 #b0b0b0,
-		4px 4px 0 #888888,
-		6px 6px 8px #444444;
+		color: #111827;
+		font-weight: 800;
+		letter-spacing: 2px;
+		text-shadow: 2px 2px 6px #88888833;
+		text-transform: uppercase;
 }
 @tailwind base;
 @tailwind components;

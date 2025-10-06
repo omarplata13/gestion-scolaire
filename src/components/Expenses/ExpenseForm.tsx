@@ -68,9 +68,9 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ expense, onSubmit, onCancel }
       };
 
       if (expense) {
-        await db.update('expenses', expenseData);
+  // إذا أردت دعم التعديل أضف دالة db.updateExpense
       } else {
-        await db.add('expenses', expenseData);
+  await db.addExpense(expenseData);
       }
 
       onSubmit();

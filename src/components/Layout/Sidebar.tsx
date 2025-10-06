@@ -20,17 +20,18 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
   const location = useLocation();
   const currentUser = AuthManager.getCurrentUser();
+  const userInitial = currentUser?.name ? currentUser.name.charAt(0) : '?';
   const isRTL = I18nManager.isRTL();
 
   const menuItems = [
-    { path: '/', icon: LayoutDashboard, label: I18nManager.t('dashboard') },
-    { path: '/students', icon: Users, label: I18nManager.t('students') },
-    { path: '/teachers', icon: GraduationCap, label: I18nManager.t('teachers') },
-    { path: '/finance', icon: DollarSign, label: I18nManager.t('finance') },
-    { path: '/attendance', icon: Calendar, label: I18nManager.t('attendance') },
-    { path: '/emploi', icon: Calendar, label: 'Emploi du temps' },
-    { path: '/expenses', icon: Receipt, label: I18nManager.t('expenses') },
-    { path: '/reports', icon: FileText, label: I18nManager.t('reports') },
+  { path: '/', icon: LayoutDashboard, label: I18nManager.t('dashboard') },
+  { path: '/students', icon: Users, label: I18nManager.t('students') },
+  { path: '/teachers', icon: GraduationCap, label: I18nManager.t('teachers') },
+  { path: '/finance', icon: DollarSign, label: I18nManager.t('finance') },
+  { path: '/attendance', icon: Calendar, label: I18nManager.t('attendance') },
+  { path: '/emploi', icon: Calendar, label: I18nManager.t('emploiDuTemps') },
+  { path: '/expenses', icon: Receipt, label: I18nManager.t('expenses') },
+  { path: '/reports', icon: FileText, label: I18nManager.t('reports') },
   ];
 
   const isActive = (path: string) => {
@@ -41,21 +42,23 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
     <div className={`h-screen w-64 bg-gray-900 text-white fixed ${isRTL ? 'right-0' : 'left-0'} top-0 z-50 flex flex-col`}>
       {/* Header */}
       <div className="p-6 border-b border-gray-700">
-        <h1 className="text-2xl font-bold text-center text-red-500">TCC</h1>
-        <p className="text-sm text-gray-400 text-center mt-2">
-          Training Coaching Center
-        </p>
+        <img
+          src="nano.png"
+          alt="Logo"
+          className="mx-auto mb-2 rounded-lg shadow-lg"
+          style={{ maxWidth: '180px', maxHeight: '120px', display: 'block' }}
+        />
       </div>
 
       {/* User Info */}
       <div className="p-4 border-b border-gray-700">
         <div className="flex items-center space-x-3">
           <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
-            <span className="text-sm font-bold">{currentUser?.name.charAt(0)}</span>
+            <span className="text-sm font-bold">{userInitial}</span>
           </div>
           <div>
-            <p className="text-sm font-medium">{currentUser?.name}</p>
-            <p className="text-xs text-gray-400 capitalize">{currentUser?.role}</p>
+            <p className="text-sm font-medium">{currentUser?.name ?? '---'}</p>
+            <p className="text-xs text-gray-400 capitalize">{currentUser?.role ?? ''}</p>
           </div>
         </div>
       </div>

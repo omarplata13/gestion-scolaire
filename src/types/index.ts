@@ -8,6 +8,7 @@ export interface User {
 export interface Student {
   id: string;
   fullName: string;
+  birthDate?: string;
   class: string;
   registrationDate: string;
   paymentType: 'monthly' | 'daily';
@@ -16,6 +17,7 @@ export interface Student {
   paymentStatus: 'paid' | 'unpaid';
   balance: number;
   phoneNumber?: string;
+  parentPhone?: string;
   subjects?: StudentSubject[];
 }
 

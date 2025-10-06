@@ -6,10 +6,11 @@ import type { Student, Teacher, AttendanceRecord } from '../../types';
 import { generateId } from '../../utils/calculations';
 import { db } from '../../utils/database';
 
-// تعريف window.electronAPI موجود في vite-env.d.ts ولا داعي لتعريفه هنا
+// تم تعطيل window.electronAPI بعد التحويل إلى IndexedDB
 
 const AttendanceModule: React.FC = () => {
   const [students, setStudents] = useState<Student[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
@@ -24,12 +25,9 @@ const AttendanceModule: React.FC = () => {
 
   const loadData = async () => {
     try {
-      await db.init();
-      const [studentsData, teachersData, attendanceData] = await Promise.all([
-        db.getAll('students'),
-        db.getAll('teachers'),
-        db.getAll('attendance')
-      ]);
+      const studentsData = await db.getAllStudents();
+      const teachersData = await db.getAllTeachers();
+      const attendanceData = await db.getAllAttendance ? await db.getAllAttendance() : [];
       setStudents(studentsData);
       setTeachers(teachersData);
       setAttendance(attendanceData);
@@ -53,11 +51,10 @@ const AttendanceModule: React.FC = () => {
 
     try {
       const existingRecord = getAttendanceForDate(personId, type);
-      
-      if (existingRecord) {
+      if (existingRecord && db.updateAttendance) {
         const updatedRecord = { ...existingRecord, status };
-        await db.update('attendance', updatedRecord);
-      } else {
+        await db.updateAttendance(updatedRecord);
+      } else if (db.addAttendance) {
         const newRecord: AttendanceRecord = {
           id: generateId(),
           [type === 'student' ? 'studentId' : 'teacherId']: personId,
@@ -65,9 +62,8 @@ const AttendanceModule: React.FC = () => {
           status,
           type
         };
-        await db.add('attendance', newRecord);
+        await db.addAttendance(newRecord);
       }
-
       await loadData();
     } catch (error) {
       console.error('Error updating attendance:', error);
@@ -87,7 +83,7 @@ const AttendanceModule: React.FC = () => {
   const presentTeachers = todayAttendance.filter(record => record.type === 'teacher' && record.status === 'present').length;
 
   return (
-    <div className="space-y-6">
+  <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900">{I18nManager.t('attendance')}</h1>
@@ -161,56 +157,70 @@ const AttendanceModule: React.FC = () => {
         {/* Content */}
         <div className="p-6">
           {activeTab === 'students' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {students.map((student) => {
-                const attendanceRecord = getAttendanceForDate(student.id, 'student');
-                const status = attendanceRecord?.status;
+            <>
+              <div className="mb-4">
+                <input
+                  type="text"
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  placeholder={I18nManager.t('search') + '...'}
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {students
+                  .filter(student =>
+                    student.fullName && student.fullName.toLowerCase().includes(searchTerm.trim().toLowerCase())
+                  )
+                  .map((student) => {
+                    const attendanceRecord = getAttendanceForDate(student.id, 'student');
+                    const status = attendanceRecord?.status;
 
-                return (
-                  <div key={student.id} className="bg-gray-50 rounded-lg p-4">
-                    <h3 className="font-medium text-gray-900 mb-2">{student.fullName}</h3>
-                    <p className="text-sm text-gray-500 mb-3">{student.class}</p>
-                    
-                    {canWrite ? (
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => handleAttendanceChange(student.id, 'present', 'student')}
-                          className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
-                            status === 'present'
-                              ? 'bg-green-500 text-white'
-                              : 'bg-gray-200 text-gray-700 hover:bg-green-100'
-                          }`}
-                        >
-                          {I18nManager.t('present')}
-                        </button>
-                        <button
-                          onClick={() => handleAttendanceChange(student.id, 'absent', 'student')}
-                          className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
-                            status === 'absent'
-                              ? 'bg-red-500 text-white'
-                              : 'bg-gray-200 text-gray-700 hover:bg-red-100'
-                          }`}
-                        >
-                          {I18nManager.t('absent')}
-                        </button>
+                    return (
+                      <div key={student.id} className="bg-gray-50 rounded-lg p-4">
+                        <h3 className="font-medium text-gray-900 mb-2">{student.fullName}</h3>
+                        <p className="text-sm text-gray-500 mb-3">{student.class}</p>
+                        {canWrite ? (
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => handleAttendanceChange(student.id, 'present', 'student')}
+                              className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+                                status === 'present'
+                                  ? 'bg-green-500 text-white'
+                                  : 'bg-gray-200 text-gray-700 hover:bg-green-100'
+                              }`}
+                            >
+                              {I18nManager.t('present')}
+                            </button>
+                            <button
+                              onClick={() => handleAttendanceChange(student.id, 'absent', 'student')}
+                              className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+                                status === 'absent'
+                                  ? 'bg-red-500 text-white'
+                                  : 'bg-gray-200 text-gray-700 hover:bg-red-100'
+                              }`}
+                            >
+                              {I18nManager.t('absent')}
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="text-center">
+                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                              status === 'present'
+                                ? 'bg-green-100 text-green-800'
+                                : status === 'absent'
+                                ? 'bg-red-100 text-red-800'
+                                : 'bg-gray-100 text-gray-800'
+                            }`}>
+                              {status ? I18nManager.t(status) : 'Not marked'}
+                            </span>
+                          </div>
+                        )}
                       </div>
-                    ) : (
-                      <div className="text-center">
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          status === 'present'
-                            ? 'bg-green-100 text-green-800'
-                            : status === 'absent'
-                            ? 'bg-red-100 text-red-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}>
-                          {status ? I18nManager.t(status) : 'Not marked'}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+                    );
+                  })}
+              </div>
+            </>
           )}
 
           {activeTab === 'teachers' && (

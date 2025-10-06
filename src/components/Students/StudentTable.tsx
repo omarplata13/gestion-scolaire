@@ -11,6 +11,22 @@ import { db } from '../../utils/database';
 
 
 const StudentTable: React.FC = () => {
+  const [attendanceToday, setAttendanceToday] = useState<{ [studentId: string]: 'present' | 'absent' }>({});
+
+  useEffect(() => {
+    const fetchAttendance = async () => {
+      const today = new Date().toISOString().slice(0, 10);
+      const records = await db.getAllAttendance();
+      const todayRecords = records.filter(r => r.type === 'student' && r.date.slice(0, 10) === today);
+      const map: { [studentId: string]: 'present' | 'absent' } = {};
+      todayRecords.forEach(r => {
+        if (r.studentId) map[r.studentId] = r.status;
+      });
+      setAttendanceToday(map);
+    };
+    fetchAttendance();
+  }, []);
+  const [sortBy, setSortBy] = useState<{ key: string; order: 'asc' | 'desc' } | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [students, setStudents] = useState<Student[]>([]);
   const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
@@ -31,10 +47,41 @@ const StudentTable: React.FC = () => {
 
   const filterStudents = React.useCallback(() => {
     let filtered = students;
+    // ترتيب حسب العمود المختار
+    if (sortBy) {
+      filtered = [...filtered].sort((a, b) => {
+        let aValue: string | number = '';
+        let bValue: string | number = '';
+        switch (sortBy.key) {
+          case 'class':
+            aValue = a.class;
+            bValue = b.class;
+            break;
+          case 'paymentType':
+            aValue = a.paymentType;
+            bValue = b.paymentType;
+            break;
+          case 'lastPaymentDate':
+            aValue = a.lastPaymentDate ? new Date(a.lastPaymentDate).getTime() : 0;
+            bValue = b.lastPaymentDate ? new Date(b.lastPaymentDate).getTime() : 0;
+            break;
+          case 'paymentStatus':
+            aValue = a.paymentStatus;
+            bValue = b.paymentStatus;
+            break;
+          default:
+            aValue = '';
+            bValue = '';
+        }
+        if (aValue < bValue) return sortBy.order === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortBy.order === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
     if (searchTerm) {
       filtered = filtered.filter(student =>
-        student.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.class.toLowerCase().includes(searchTerm.toLowerCase())
+        (student.fullName && student.fullName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (student.class && student.class.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
     if (selectedClass) {
@@ -52,7 +99,7 @@ const StudentTable: React.FC = () => {
       filtered = filtered.filter(student => student.paymentStatus === selectedPaymentStatus);
     }
     setFilteredStudents(filtered);
-  }, [students, searchTerm, selectedClass, selectedBranch, selectedTeacher, selectedPaymentStatus]);
+  }, [students, searchTerm, selectedClass, selectedBranch, selectedTeacher, selectedPaymentStatus, sortBy]);
 
   useEffect(() => {
     loadStudents();
@@ -64,10 +111,9 @@ const StudentTable: React.FC = () => {
 
   const loadStudents = async () => {
     try {
-      await db.init();
-      const data = await db.getAll('students');
-      setStudents(data);
-      setLoading(false);
+  const data = await db.getAllStudents();
+  setStudents(data);
+  setLoading(false);
     } catch (error) {
       console.error('Error loading students:', error);
       setLoading(false);
@@ -87,8 +133,8 @@ const StudentTable: React.FC = () => {
   const handleDeleteStudent = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this student?')) {
       try {
-        await db.delete('students', id);
-        await loadStudents();
+  await db.deleteStudent(id);
+  await loadStudents();
       } catch (error) {
         console.error('Error deleting student:', error);
       }
@@ -100,9 +146,9 @@ const StudentTable: React.FC = () => {
     setEditingStudent(null);
     if (student) {
       if (student.id) {
-        await db.update('students', student);
+        await db.updateStudent(student);
       } else {
-        await db.add('students', student);
+        await db.addStudent(student);
       }
     }
     await loadStudents();
@@ -118,7 +164,7 @@ const StudentTable: React.FC = () => {
         paymentStatus: 'paid',
         lastPaymentDate: new Date().toISOString()
       };
-      await db.update('students', updatedStudent);
+      await db.updateStudent(updatedStudent);
       // Create a payment record
       const teacherShare = Math.round(student.amountPaid * 0.7 * 100) / 100;
       const schoolShare = Math.round(student.amountPaid * 0.3 * 100) / 100;
@@ -132,7 +178,7 @@ const StudentTable: React.FC = () => {
         schoolShare,
         notes: 'Payment marked as paid'
       };
-      await db.add('payments', payment);
+      await db.addPayment(payment);
       await loadStudents();
       window.dispatchEvent(new CustomEvent('dataUpdated'));
     } catch (error) {
@@ -153,14 +199,51 @@ const StudentTable: React.FC = () => {
   const StudentInfoModal = ({ student, onClose }: { student: Student, onClose: () => void }) => (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
       <div className="bg-white rounded-lg shadow-lg p-6 min-w-[300px] max-w-[90vw]">
-        <h2 className="text-xl font-bold mb-4 text-gray-800">Informations de l'élève</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold text-gray-800">Infos du jour étudiants</h2>
+          <button
+            className="ml-2 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs font-semibold shadow"
+            onClick={() => {
+              const presence = attendanceToday[student.id] === 'present' ? 'Présent' : attendanceToday[student.id] === 'absent' ? 'Absent' : '-';
+              const info = `Nom complet : ${student.fullName}\nClasse : ${student.class}\nType de paiement : ${I18nManager.t(student.paymentType)}\nDernier paiement : ${student.lastPaymentDate ? new Date(student.lastPaymentDate).toLocaleDateString() : '-'}\nMontant payé : ${student.amountPaid}\nStatut : ${student.paymentStatus === 'paid' ? 'Payé' : 'Non payé'}\nPrésence : ${presence}\nTéléphone du parent : ${student.parentPhone || '-'}`;
+              navigator.clipboard.writeText(info);
+            }}
+            title="Copier les infos"
+          >
+            Copier
+          </button>
+        </div>
         <div className="space-y-2 text-gray-700">
           <div><span className="font-semibold">Nom complet :</span> {student.fullName}</div>
           <div><span className="font-semibold">Classe :</span> {student.class}</div>
-          <div><span className="font-semibold">Type de paiement :</span> {student.paymentType}</div>
+          <div><span className="font-semibold">Type de paiement :</span> {I18nManager.t(student.paymentType)}</div>
           <div><span className="font-semibold">Dernier paiement :</span> {student.lastPaymentDate ? new Date(student.lastPaymentDate).toLocaleDateString() : '-'}</div>
           <div><span className="font-semibold">Montant payé :</span> {student.amountPaid}</div>
           <div><span className="font-semibold">Statut :</span> {student.paymentStatus === 'paid' ? 'Payé' : 'Non payé'}</div>
+          <div><span className="font-semibold">Présence :</span> {attendanceToday[student.id] === 'present' ? 'Présent' : attendanceToday[student.id] === 'absent' ? 'Absent' : '-'}</div>
+          <div className="flex items-center space-x-2">
+            <span className="font-semibold">Téléphone du parent :</span> {student.parentPhone || '-'}
+            {student.parentPhone && (
+              <button
+                className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs font-semibold shadow"
+                onClick={() => {
+                  const rawPhone = student.parentPhone ?? '';
+                  // إزالة أي رموز غير رقمية من البداية
+                  let phone = rawPhone.replace(/[^\d]/g, '');
+                  if (!phone.startsWith('213')) {
+                    phone = `213${phone}`;
+                  }
+                  const message = encodeURIComponent(`Bonjour, voici les informations de votre enfant ${student.fullName} aujourd'hui.`);
+                  if (phone) {
+                    window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+                  }
+                }}
+                title="Envoyer sur WhatsApp"
+              >
+                WhatsApp
+              </button>
+            )}
+          </div>
         </div>
         <button
           onClick={onClose}
@@ -280,20 +363,48 @@ const StudentTable: React.FC = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   {I18nManager.t('fullName')}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer select-none hover:text-red-600"
+                  onClick={() => setSortBy({ key: 'class', order: sortBy?.key === 'class' && sortBy.order === 'asc' ? 'desc' : 'asc' })}
+                  title="ترتيب حسب الكلاس"
+                >
                   {I18nManager.t('class')}
+                  <span className="ml-1">
+                    {sortBy?.key === 'class' && (sortBy.order === 'asc' ? '▲' : '▼')}
+                  </span>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer select-none hover:text-red-600"
+                  onClick={() => setSortBy({ key: 'paymentType', order: sortBy?.key === 'paymentType' && sortBy.order === 'asc' ? 'desc' : 'asc' })}
+                  title="ترتيب حسب نوع الدفع"
+                >
                   {I18nManager.t('paymentType')}
+                  <span className="ml-1">
+                    {sortBy?.key === 'paymentType' && (sortBy.order === 'asc' ? '▲' : '▼')}
+                  </span>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer select-none hover:text-red-600"
+                  onClick={() => setSortBy({ key: 'lastPaymentDate', order: sortBy?.key === 'lastPaymentDate' && sortBy.order === 'asc' ? 'desc' : 'asc' })}
+                  title="ترتيب حسب آخر تاريخ دفع"
+                >
                   {I18nManager.t('lastPaymentDate')}
+                  <span className="ml-1">
+                    {sortBy?.key === 'lastPaymentDate' && (sortBy.order === 'asc' ? '▲' : '▼')}
+                  </span>
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   {I18nManager.t('amountPaid')}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer select-none hover:text-red-600"
+                  onClick={() => setSortBy({ key: 'paymentStatus', order: sortBy?.key === 'paymentStatus' && sortBy.order === 'asc' ? 'desc' : 'asc' })}
+                  title="ترتيب حسب الحالة"
+                >
                   {I18nManager.t('status')}
+                  <span className="ml-1">
+                    {sortBy?.key === 'paymentStatus' && (sortBy.order === 'asc' ? '▲' : '▼')}
+                  </span>
                 </th>
                 {canWrite && (
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">

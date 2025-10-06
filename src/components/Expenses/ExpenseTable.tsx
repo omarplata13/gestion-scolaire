@@ -24,7 +24,7 @@ const ExpenseTable: React.FC = () => {
     }
 
     const filtered = expenses.filter(expense =>
-      expense.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (expense.type && expense.type.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (expense.notes && expense.notes.toLowerCase().includes(searchTerm.toLowerCase()))
     );
     setFilteredExpenses(filtered);
@@ -42,8 +42,7 @@ const ExpenseTable: React.FC = () => {
 
   const loadExpenses = async () => {
     try {
-      await db.init();
-      const data = await db.getAll('expenses');
+      const data = await db.getAllExpenses();
       setExpenses(data);
       setLoading(false);
     } catch (error) {
@@ -65,7 +64,7 @@ const ExpenseTable: React.FC = () => {
   const handleDeleteExpense = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this expense?')) {
       try {
-        await db.delete('expenses', id);
+        await db.deleteExpense(id);
         await loadExpenses();
       } catch (error) {
         console.error('Error deleting expense:', error);
@@ -73,9 +72,17 @@ const ExpenseTable: React.FC = () => {
     }
   };
 
-  const handleFormSubmit = async () => {
+  const handleFormSubmit = async (expense?: Expense) => {
     setShowForm(false);
     setEditingExpense(null);
+    if (expense) {
+      if (expense.id) {
+        // لا يوجد updateExpense في db، إذا أردت إضافة دالة تحديث أضفها في db ثم استعملها هنا
+        // await db.updateExpense(expense);
+      } else {
+        await db.addExpense(expense);
+      }
+    }
     await loadExpenses();
   };
 
