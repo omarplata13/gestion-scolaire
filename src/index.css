@@ -1,12 +1,14 @@
+/* 3D effect for dashboard title */
+.three-d-title {
+	text-shadow:
+		2px 2px 0 #b0b0b0,
+		4px 4px 0 #888888,
+		6px 6px 8px #444444;
+}
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-html {
-	zoom: 1;
-}
 
-body {
-	transform: scale(0.95);
-	transform-origin: top left;
-	width: 105.3%;
+html {
+	font-size: 16px;
 }
