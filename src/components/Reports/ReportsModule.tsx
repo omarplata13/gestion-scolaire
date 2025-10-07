@@ -101,7 +101,7 @@ const ReportsModule: React.FC = () => {
   // Presence PDF state
   const [selectedPresenceTeacherId, setSelectedPresenceTeacherId] = useState<string>('');
   // Presence PDF generator
-  const downloadPresencePDF = () => {
+  const downloadPresencePDF = async () => {
     if (!selectedPresenceTeacherId) return;
     const teacher = teachers.find(t => t.id === selectedPresenceTeacherId);
     if (!teacher) return;
@@ -157,8 +157,8 @@ const ReportsModule: React.FC = () => {
     }
   };
 
-  const generateStudentReport = () => {
-    const doc = new jsPDF();
+  const generateStudentReport = async () => {
+    const doc = await createPdfWithFont();
     const pageWidth = doc.internal.pageSize.width;
     doc.setFontSize(20);
   doc.text('TCC - Student Report', pageWidth / 2, 20, { align: 'center' });
@@ -184,8 +184,8 @@ const ReportsModule: React.FC = () => {
     doc.save('students-report.pdf');
   };
 
-  const generateTeacherReport = () => {
-    const doc = new jsPDF();
+  const generateTeacherReport = async () => {
+    const doc = await createPdfWithFont();
     const pageWidth = doc.internal.pageSize.width;
     doc.setFontSize(20);
   doc.text('TCC - Teacher Report', pageWidth / 2, 20, { align: 'center' });
@@ -211,8 +211,8 @@ const ReportsModule: React.FC = () => {
     doc.save('teachers-report.pdf');
   };
 
-  const generateFinanceReport = () => {
-    const doc = new jsPDF();
+  const generateFinanceReport = async () => {
+    const doc = await createPdfWithFont();
     const pageWidth = doc.internal.pageSize.width;
     const totalRevenue = payments.reduce((sum, payment) => sum + payment.amount, 0);
     const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
@@ -264,8 +264,8 @@ const ReportsModule: React.FC = () => {
   }
 
   // Generate Students Per Teacher Report (fixed: show students by subject/teacher assignment)
-  const generateStudentsPerTeacherReport = () => {
-    const doc = new jsPDF();
+  const generateStudentsPerTeacherReport = async () => {
+    const doc = await createPdfWithFont();
     const pageWidth = doc.internal.pageSize.width;
     doc.setFontSize(18);
     doc.text('Students per Teacher Report', pageWidth / 2, 20, { align: 'center' });
@@ -314,8 +314,8 @@ const ReportsModule: React.FC = () => {
   };
 
   // Export all students as PDF (moved inside component)
-  const exportAllStudentsPDF = () => {
-    const doc = new jsPDF();
+  const exportAllStudentsPDF = async () => {
+    const doc = await createPdfWithFont();
     const pageWidth = doc.internal.pageSize.width;
     doc.setFontSize(18);
     doc.text('All Students List', pageWidth / 2, 20, { align: 'center' });
@@ -340,8 +340,8 @@ const ReportsModule: React.FC = () => {
   };
 
   // Export all teachers as PDF (moved inside component)
-  const exportAllTeachersPDF = () => {
-    const doc = new jsPDF();
+  const exportAllTeachersPDF = async () => {
+    const doc = await createPdfWithFont();
     const pageWidth = doc.internal.pageSize.width;
     doc.setFontSize(18);
     doc.text('All Teachers List', pageWidth / 2, 20, { align: 'center' });
@@ -559,9 +559,9 @@ const ReportsModule: React.FC = () => {
           {noteSaved && (
             <div className="space-y-2">
               <div className="bg-gray-50 border rounded-lg p-2 text-gray-800 whitespace-pre-wrap min-h-[80px]">{note}</div>
-              <button
-                onClick={() => {
-                  const doc = new jsPDF();
+                  <button
+                onClick={async () => {
+                  const doc = await createPdfWithFont();
                   doc.setFontSize(18);
                   doc.text('Note | Remarque', 20, 20);
                   doc.setFontSize(12);
