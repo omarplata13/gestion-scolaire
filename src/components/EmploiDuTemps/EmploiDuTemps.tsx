@@ -202,9 +202,9 @@ const EmploiDuTemps: React.FC = () => {
         </button>
         <button
           onClick={async () => {
-            const jsPDF = (await import('jspdf')).default;
             const autoTable = (await import('jspdf-autotable')).default;
-            const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+            const { createPdfWithFont } = await import('../../utils/pdf');
+            const doc = await createPdfWithFont({ orientation: 'landscape', unit: 'pt', format: 'a4' });
             // Header: TCC name and Emploi du temps
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(44, 62, 80);

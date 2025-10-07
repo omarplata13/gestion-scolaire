@@ -33,6 +33,7 @@ import type { Student, Teacher, Payment, Expense } from '../../types';
 import { db } from '../../utils/database';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { createPdfWithFont } from '../../utils/pdf';
 
 const ReportsModule: React.FC = () => {
   // Restore backup data from uploaded file
@@ -107,7 +108,7 @@ const ReportsModule: React.FC = () => {
     const assignedStudents = students.filter(student =>
       (student.subjects || []).some(sub => sub.teacherIds.includes(teacher.id))
     );
-    const doc = new jsPDF();
+  const doc = await createPdfWithFont();
     const pageWidth = doc.internal.pageSize.width;
     doc.setFontSize(18);
     doc.text(`Liste Présence`, pageWidth / 2, 20, { align: 'center' });
